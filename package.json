@@ -1,0 +1,22 @@
+{
+  "name": "liri-node-app",
+  "version": "1.0.0",
+  "description": "liri-bot using multiple APIs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/katerinewh/liri-node-app.git"
+  },
+  "author": "Kat",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/katerinewh/liri-node-app/issues"
+  },
+  "homepage": "https://github.com/katerinewh/liri-node-app#readme",
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
+}
