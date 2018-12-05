@@ -1,1 +1,2 @@
 # liri-node-app
+LIRI is be a command line node app that takes in parameters and gives you back data from multiple sources. In this project I am using OMDB, Spotify, and Band is in Town in conjunction with Moment, Axios, and DotEnv. 
