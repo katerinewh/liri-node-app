@@ -2,11 +2,11 @@
 console.log('this is loaded');
 
 exports.spotify = {
-  id: process.env.563ea07e8eea44a6977bb2415185335e,
-  secret: process.env.3c92e91bf4de4eef853d0156dd498d,
+  id: process.env.SPOTIFY_ID,
+  secret: process.env.SPOTIFY_SECRET,
 };
 // add code required to import th keys.js file and store it in a variable
-var spotify = new Spotify(keys.spotify);
+// var spotify = new Spotify(keys.spotify);
 
 
 
