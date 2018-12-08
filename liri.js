@@ -1,122 +1,175 @@
-//==================node mod imports needed:
-var axios = require("axios");
-var fs = require("fs");
-var dot = require("dotenv").config();
+// node mod imports needed:
+require("dotenv").config();
 var keys = require("./keys.js");
-var Spotify = require("node-spotify-api");
-var moment = require("moment");
-var cTable = require("console.table");
-console.log(keys)
-
+var request = require("request");
+var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
-var songName = process.argv.slice(3).join("+");
+var moment = require('moment');
+moment().format();
+var fs = require("fs")
+
+var nodeArgs = process.argv;
+var userInput = "";
+var prettyUserInput = "";
 
 
-// functions: Make it so liri.js can take in one of the following commands:
-//====================concert-this
-if (process.argv[2] === "concert-this") {
-    console.log(songName);
-    var queryUrl = "https://rest.bandsintown.com/artists/" + songName + "/events?app_id=codingbootcamp";
-    console.log(queryUrl);
-    axios.get(queryUrl)
-        .then(function (response) {
-            var data = response.data;
-            var i;
-            for (i = 0; i < data.length; i++) {
-                console.log("Venue name " + data[i].venue.name);
-                console.log("Venue location " + data[i].venue.city);
-                console.log("Date of Event " + moment(data[i].datetime).format("MM/DD/YYYY"));
-                console.log("------------------------------------");
-            }
-        })
-        .catch(function (err) {
-            console.log(err)
-        })
-} else if (process.argv[2] == "spotify-this-song") {
-    if (songName == undefined) {
-        songName = "The sign by Ace of Base";
+//Get user inputs for song/artist/movie name
+
+for (var i = 3; i < nodeArgs.length; i++) {
+    if (i > 3 && i < nodeArgs.length) {
+        userInput = userInput + "%20" + nodeArgs[i];
     }
-    spotify.search({ type: "track", query: songName, limit: 10 }, function (err, data) {
-        if (err) {
-            return console.log("Error occurred: " + err);
-        }
-        var tableArray = [];
-        for (var i = 0; i < data.tracks.items.length; i++) {
-            var result = {
-                artist: data.tracks.items[i].album.artists[0].name,
-                album_name: data.tracks.items[i].album.name,
-                song_name: data.tracks.items[i].name,
-                preview_url: data.tracks.items[i].preview_url
+    else {
+        userInput += nodeArgs[i];
+    }
+}
+for (var i = 3; i < nodeArgs.length; i++) {
+    prettyUserInput = userInput.replace(/%20/g, " ");
+}
+var userCommand = process.argv[2];
+//Switch statement for commands
+function runLiri() {
+    switch (userCommand) {
+        case "concert-this":
+            fs.appendFileSync("log.txt", prettyUserInput + "\n----------------\n", function (error) {
+                if (error) {
+                    console.log(error);
+                };
+            });
+            //Run bandsintown
+            var queryURL = "https://rest.bandsintown.com/artists/" + userInput + "/events?app_id=codingbootcamp"
+            request(queryURL, function (error, response, body) {
+                //If no error 
+                if (!error && response.statusCode === 200) {
+                    var data = JSON.parse(body);
+                    for (var i = 0; i < data.length; i++) {
+                        console.log("Venue: " + data[i].venue.name);
+                        fs.appendFileSync("log.txt", "Venue: " + data[i].venue.name + "\n", function (error) {
+                            if (error) {
+                                console.log(error);
+                            };
+                        });
+                        //Get venue location
+                        if (data[i].venue.region == "") {
+                            console.log("Location: " + data[i].venue.city + ", " + data[i].venue.country);
+                            fs.appendFileSync("log.txt", "Location: " + data[i].venue.city + ", " + data[i].venue.country + "\n", function (error) {
+                                if (error) {
+                                    console.log(error);
+                                };
+                            });
+                        } else {
+                            console.log("Location: " + data[i].venue.city + ", " + data[i].venue.region + ", " + data[i].venue.country);
+                            fs.appendFileSync("log.txt", "Location: " + data[i].venue.city + ", " + data[i].venue.region + ", " + data[i].venue.country + "\n", function (error) {
+                                if (error) {
+                                    console.log(error);
+                                };
+                            });
+                        }
+                        var date = data[i].datetime;
+                        date = moment(date).format("MM/DD/YYYY");
+                        console.log("Date: " + date)
+                        fs.appendFileSync("log.txt", "Date: " + date + "\n----------------\n", function (error) {
+                            if (error) {
+                                console.log(error);
+                            };
+                        });
+                        console.log("----------------")
+                    }
+                }
+            });
+            break;
+        case "spotify-this-song":
+            //If statement for no song provided
+            if (!userInput) {
+                userInput = "The%20Sign";
+                prettyUserInput = userInput.replace(/%20/g, " ");
             }
-            tableArray.push(result);
-        }
-        var table = cTable.getTable(tableArray);
-        console.log(table);
-    });
+            fs.appendFileSync("log.txt", prettyUserInput + "\n----------------\n", function (error) {
+                if (error) {
+                    console.log(error);
+                };
+            });
+            spotify.search({
+                type: "track",
+                query: userInput
+            }, function (err, data) {
+                if (err) {
+                    console.log("Error occured: " + err)
+                }
+                var info = data.track.items
+                array
+                for (var i = 0; i < info.length; i++) {
+                    var albumObject = info[i].album;
+                    var trackName = info[i].name
+                    var preview = info[i].preview_url
+                    var artistsInfo = albumObject.artists
+                    for (var j = 0; j < artistsInfo.length; j++) {
+                        console.log("Artist: " + artistsInfo[j].name)
+                        console.log("Song Name: " + trackName)
+                        console.log("Preview of Song: " + preview)
+                        console.log("Album Name: " + albumObject.name)
+                        console.log("----------------")
+                        fs.appendFileSync("log.txt", "Artist: " + artistsInfo[j].name + "\nSong Name: " + trackName + "\nPreview of Song: " + preview + "\nAlbum Name: " + albumObject.name + "\n----------------\n", function (error) {
+                            if (error) {
+                                console.log(error);
+                            };
+                        });
+                    }
+                }
+            })
+            break;
+        case "movie-this":
+            //If no movie provided
+            if (!userInput) {
+                userInput = "Mr%20Nobody";
+                prettyUserInput = userInput.replace(/%20/g, " ");
+            }
+            fs.appendFileSync("log.txt", prettyUserInput + "\n----------------\n", function (error) {
+                if (error) {
+                    console.log(error);
+                };
+            });
+            //Run request to OMDB
+            var queryURL = "https://www.omdbapi.com/?t=" + userInput + "&y=&plot=short&apikey=trilogy"
+            request(queryURL, function (error, response, body) {
+                if (!error && response.statusCode === 200) {
+                    var info = JSON.parse(body);
+                    console.log("Title: " + info.Title)
+                    console.log("Release Year: " + info.Year)
+                    console.log("IMDB Rating: " + info.Ratings[0].Value)
+                    console.log("Rotten Tomatoes Rating: " + info.Ratings[1].Value)
+                    console.log("Country: " + info.Country)
+                    console.log("Language: " + info.Language)
+                    console.log("Plot: " + info.Plot)
+                    console.log("Actors: " + info.Actors)
+                    //Append data to log.txt
+                    fs.appendFileSync("log.txt", "Title: " + info.Title + "\nRelease Year: " + info.Year + "\nIMDB Rating: " + info.Ratings[0].Value + "\nRotten Tomatoes Rating: " +
+                        info.Ratings[1].Value + "\nCountry: " + info.Country + "\nLanguage: " + info.Language + "\nPlot: " + info.Plot + "\nActors: " + info.Actors + "\n----------------\n",
+                        function (error) {
+                            if (error) {
+                                console.log(error);
+                            };
+                        });
+                }
+            });
+            break;
+    }
+}
 
-
-    //=========================movie-this
-} else if (process.argv[2] == 'movie-this') {
-    console.log(movieName);
-    var movieQueryUrl = "http://www.omdbapi.com/?i=tt3896198&apikey=d37eb3c3" + movieName;
-    console.log(movieQueryUrl);
-    axios.get(movieQueryUrl)
-    .then(function(response){
-        var data = response.data;
-        var i;
-        for (i = 0; i<data.length; i++){
-        console.log("Title :" + data.Title);
-        console.log("Year :" + data.Released);
-        console.log("IMDB Rating :" + data.imdbRating);
-        console.log("Rotten Tomatoes :" + data.Ratings[1].Value);
-        console.log("Country :" + data.Country);
-        console.log("Language :" + data.Language);
-        console.log("Movie Plot :" + data.Plot);
-        console.log("Actors :" + data.Actors);
-        console.log("--------------------------");
+if (userCommand == "do-what-it-says") {
+    var fs = require("fs");
+    //Read random.txt file
+    fs.readFile("random.txt", "utf8", function (error, data) {
+        if (error) {
+            return console.log(error)
         }
+        //Split data into array
+        var textArr = data.split(",");
+        userCommand = textArr[0];
+        userInput = textArr[1];
+        prettyUserInput = userInput.replace(/%20/g, " ");
+        runLiri();
     })
-    .catch(function(err){
-        console.log(err)
-    }
+}
 
-        
-    
-    // var movieName = process.argv.slice(3).join(" ");
-
-    // if (movieName == undefined) {
-    //     movieName = "Mr. Nobody";
-    }
-   
-//    //================Function for Random
-//     function getRandom() {
-//         fs.readFile("random.txt", "utf8", function (error, data) {
-//             if (error) {
-//                 return console.log(error);
-//             }
-//             else {
-//                 console.log(data);
-//                 var randomData = data.split(",");
-//                 commands(randomData[0], randomData[1]);
-//             }
-//             console.log("test" + randomData[0] + randomData[1]);
-//         });
-//     };
-
-//     //Function to log results from the other functions
-//     function logResults(data) {
-//         fs.appendFile("log.txt", data, function (err) {
-//             if (err)
-//                 throw err;
-//         });
-//     };
-
-//     //============do-what-it-says
-
-//     // fs.readFile("random.txt", "utf8", function(error, data){
-
-//     // })
-//     // } else if (process.argv[2] == "do-what-it-says") {
-//     //     console.log("do what it says")
-//     // 
-// }
+runLiri();
