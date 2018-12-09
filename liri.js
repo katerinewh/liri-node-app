@@ -96,9 +96,8 @@ function runLiri() {
                 if (err) {
                     console.log("Error occured: " + err)
                 }
-                var info = data.track.items
-                array
-                for (var i = 0; i < info.length; i++) {
+                var info = data.tracks.items
+                        for (var i = 0; i < info.length; i++) {
                     var albumObject = info[i].album;
                     var trackName = info[i].name
                     var preview = info[i].preview_url
